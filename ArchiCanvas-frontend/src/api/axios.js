@@ -6,7 +6,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token"); // e.g., from localStorage or your AuthContext
+  const token = localStorage.getItem("archicanvas-token"); // e.g., from localStorage or your AuthContext
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
