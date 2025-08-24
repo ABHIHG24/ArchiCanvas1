@@ -24,6 +24,9 @@ const errorMiddleware = require("./utils/errorHandler.js");
 
 app.get("/", (req, res) => res.send("Hello, Backend!"));
 
+// Add this line below your other app.use() calls
+app.use("/api/v1/news", require("./routes/news.routes"));
+
 app.use("/api/v1/image", express.static(`./uploads`));
 // app.use("/images", express.static(path.join(__dirname, "public")));
 app.use("/api/v1/upload", express.static("upload"));

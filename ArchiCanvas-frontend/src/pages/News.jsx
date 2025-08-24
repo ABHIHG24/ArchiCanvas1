@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { motion } from "framer-motion";
-
-// --- CONFIGURATION ---
-const apiKey = import.meta.env.VITE_NEWS_API_KEY;
-const NEWS_API_URL = `https://newsapi.org/v2/everything?q=(art OR culture OR museum OR exhibition)&sortBy=popularity&language=en&apiKey=${apiKey}`;
+import apiClient from "../api/axios"; // Use your central API client
+import toast from "react-hot-toast";
 
 // --- Reusable Sub-Components ---
 
@@ -78,23 +75,11 @@ const NewsPage = () => {
 
   useEffect(() => {
     const fetchNews = async () => {
-      if (!apiKey) {
-        setError(
-          "News API key is missing. Please add VITE_NEWS_API_KEY to your .env file."
-        );
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
 
-        // --- THIS IS THE CORRECTED API CALL ---
-        // We use axios.get() and explicitly set withCredentials to false
-        // to avoid CORS errors with the external News API.
-        const response = await axios.get(NEWS_API_URL, {
-          withCredentials: false,
-        });
+        // We now call our own backend, which is much safer and avoids the 426 error.
+        const response = await apiClient.get("/news");
 
         const filteredArticles = response.data.articles.filter(
           (article) =>
@@ -102,10 +87,9 @@ const NewsPage = () => {
         );
         setArticles(filteredArticles);
       } catch (err) {
-        setError(
-          "Failed to fetch news. The API might be down or your key is invalid."
-        );
+        setError("Failed to fetch news from the server.");
         console.error(err);
+        toast.error("Failed to fetch news.");
       } finally {
         setLoading(false);
       }
