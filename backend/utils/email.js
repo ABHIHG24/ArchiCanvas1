@@ -1,30 +1,35 @@
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 
+// Set SendGrid API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+/**
+ * sendEmail(options)
+ * SAME API as Nodemailer version
+ *
+ * @param {Object} options
+ * @param {string} options.to
+ * @param {string} options.subject
+ * @param {string} options.text
+ * @param {string} options.html
+ */
 const sendEmail = async (options) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: false, // required for 465
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  });
+  try {
+    await sgMail.send({
+      to: options.to,
+      from: `"Pathfinder" <${process.env.EMAIL_FROM}>`, // verified sender
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+    });
 
-  // 🔍 Verify connection (VERY IMPORTANT)
-  await transporter.verify();
-  console.log("SMTP connection verified");
-
-  const info = await transporter.sendMail({
-    from: `"Pathfinder" <${process.env.SMTP_USER}>`,
-    to: options.to,
-    subject: options.subject,
-    text: options.text,
-    html: options.html,
-  });
-
-  console.log("Email sent:", info.messageId);
-  return info;
+    console.log("✅ Email sent successfully via SendGrid");
+  } catch (error) {
+    console.error(
+      "❌ SendGrid Email Error:",
+      error.response?.body || error.message,
+    );
+  }
 };
 
 module.exports = sendEmail;
