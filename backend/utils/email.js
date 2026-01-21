@@ -2,33 +2,29 @@ const nodemailer = require("nodemailer");
 
 const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMPT_HOST,
-    port: process.env.SMPT_PORT,
-    secure: true,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: true, // required for 465
     auth: {
-      user: process.env.SMPT_USER,
-      pass: process.env.SMPT_PASSWORD,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 
-  const mailOptions = {
-    from: "Pathfinder@gmail.com",
+  // 🔍 Verify connection (VERY IMPORTANT)
+  await transporter.verify();
+  console.log("SMTP connection verified");
+
+  const info = await transporter.sendMail({
+    from: `"Pathfinder" <${process.env.SMTP_USER}>`,
     to: options.to,
     subject: options.subject,
     text: options.text,
     html: options.html,
-  };
+  });
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    // Log the response for debugging purposes
-    console.log("Email sent successfully:", info.response);
-    return info;
-  } catch (error) {
-    // Log the error in case of failure
-    console.error("Error occurred while sending email:", error);
-    throw error;
-  }
+  console.log("Email sent:", info.messageId);
+  return info;
 };
 
 module.exports = sendEmail;
